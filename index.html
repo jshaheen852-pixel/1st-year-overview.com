@@ -1,0 +1,431 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pakistan First-Year Knowledge Hub</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #ffffff;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            animation: starPulse 1.5s infinite ease-in-out;
+        }
+
+        .star-trail {
+            width: 8px;
+            height: 8px;
+            background: #ffd700;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9989;
+            opacity: 0.7;
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes starPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 0.7; }
+            100% { opacity: 0; }
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        nav {
+            background: #ffffff;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav a {
+            color: #1e3c72;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: #ffd700;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            color: #f0e68c;
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        p, ul {
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: bgMove 10s infinite linear;
+        }
+
+        @keyframes bgMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            nav {
+                padding: 10px;
+            }
+
+            nav a {
+                margin: 0 10px;
+                font-size: 0.9rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            p, ul {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <header>
+        <h1>Pakistan First-Year Knowledge Hub</h1>
+        <p>Your comprehensive guide to excelling in 1st-year Intermediate studies!</p>
+    </header>
+    <nav>
+        <a href="#math">Mathematics</a>
+        <a href="#physics">Physics</a>
+        <a href="#chemistry">Chemistry</a>
+        <a href="#biology">Biology</a>
+        <a href="#english">English</a>
+        <a href="#urdu">Urdu</a>
+        <a href="#islamic">Islamic Studies/Pak Studies</a>
+        <a href="#computer">Computer Science</a>
+    </nav>
+    <div class="container">
+        <section id="math">
+            <h2>Mathematics</h2>
+            <h3>Overview</h3>
+            <p>Mathematics in 1st-year Intermediate (FSc/ICS) is a core subject that builds a foundation for advanced studies in engineering, sciences, and economics. It emphasizes problem-solving, logical reasoning, and analytical skills.</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Number Systems</strong>: Real, complex numbers, properties, and operations.</li>
+                <li><strong>Sets, Functions, and Groups</strong>: Set operations, types of functions, and group theory basics.</li>
+                <li><strong>Matrices and Determinants</strong>: Matrix operations, inverse, and solving systems of equations.</li>
+                <li><strong>Quadratic Equations</strong>: Solving equations, nature of roots, and applications.</li>
+                <li><strong>Sequences and Series</strong>: Arithmetic and geometric progressions, summation.</li>
+                <li><strong>Trigonometry</strong>: Identities, equations, and applications in triangles.</li>
+                <li><strong>Mathematical Induction</strong>: Proof techniques for series and divisibility.</li>
+                <li><strong>Permutations and Combinations</strong>: Counting principles and probability basics.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Practice daily to master problem-solving techniques.</li>
+                <li>Use past papers to understand question patterns.</li>
+                <li>Memorize key formulas and practice their applications.</li>
+                <li>Understand concepts like matrices and trigonometry through visual aids.</li>
+            </ul>
+        </section>
+        <section id="physics">
+            <h2>Physics</h2>
+            <h3>Overview</h3>
+            <p>Physics explores the fundamental principles governing the universe, focusing on measurements, mechanics, and energy. It’s essential for students pursuing engineering or medical fields.</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Measurements</strong>: Units, dimensions, and error analysis.</li>
+                <li><strong>Vectors and Equilibrium</strong>: Vector addition, resolution, and equilibrium conditions.</li>
+                <li><strong>Motion and Force</strong>: Newton’s laws, projectile motion, and friction.</li>
+                <li><strong>Work, Power, and Energy</strong>: Work-energy theorem, conservation of energy.</li>
+                <li><strong>Circular Motion</strong>: Angular velocity, centripetal force.</li>
+                <li><strong>Fluid Dynamics</strong>: Bernoulli’s equation, viscosity.</li>
+                <li><strong>Oscillations</strong>: Simple harmonic motion, damped oscillations.</li>
+                <li><strong>Waves</strong>: Types, properties, and interference.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Conduct experiments to visualize concepts like projectile motion.</li>
+                <li>Solve numerical problems to strengthen application skills.</li>
+                <li>Focus on understanding vector diagrams and free-body diagrams.</li>
+                <li>Use online simulations for topics like waves and oscillations.</li>
+            </ul>
+        </section>
+        <section id="chemistry">
+            <h2>Chemistry</h2>
+            <h3>Overview</h3>
+            <p>Chemistry covers the study of matter, its properties, and reactions. It’s vital for medical, engineering, and applied sciences students.</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Basic Concepts</strong>: Atomic structure, mole concept, stoichiometry.</li>
+                <li><strong>States of Matter</strong>: Gas laws, liquid properties, and solids.</li>
+                <li><strong>Chemical Bonding</strong>: Ionic, covalent, and metallic bonds.</li>
+                <li><strong>Thermochemistry</strong>: Enthalpy, Hess’s law, and heat of reaction.</li>
+                <li><strong>Chemical Equilibrium</strong>: Equilibrium constant, Le Chatelier’s principle.</li>
+                <li><strong>Acids, Bases, and Salts</strong>: pH, buffers, and neutralization.</li>
+                <li><strong>Electrochemistry</strong>: Redox reactions, electrochemical cells.</li>
+                <li><strong>Organic Chemistry Introduction</strong>: Hydrocarbons, functional groups.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Practice balancing chemical equations daily.</li>
+                <li>Use molecular models to understand bonding and structure.</li>
+                <li>Memorize the periodic table and common reaction types.</li>
+                <li>Perform lab experiments to reinforce theoretical knowledge.</li>
+            </ul>
+        </section>
+        <section id="biology">
+            <h2>Biology</h2>
+            <h3>Overview</h3>
+            <p>Biology is crucial for pre-medical students, focusing on the study of life, cells, and organisms. It builds a foundation for advanced topics in medicine.</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Cell Biology</strong>: Cell structure, functions, and division.</li>
+                <li><strong>Biological Molecules</strong>: Carbohydrates, proteins, lipids, and enzymes.</li>
+                <li><strong>Microbiology</strong>: Bacteria, viruses, and their roles.</li>
+                <li><strong>Kingdoms of Life</strong>: Prokaryotes, protists, fungi, plants, and animals.</li>
+                <li><strong>Bioenergetics</strong>: Photosynthesis, respiration, and ATP.</li>
+                <li><strong>Human Physiology</strong>: Digestive, respiratory, and circulatory systems.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Draw diagrams for cell structures and physiological systems.</li>
+                <li>Study past papers to focus on high-yield topics.</li>
+                <li>Use mnemonics to memorize biological classifications.</li>
+                <li>Watch educational videos for complex processes like photosynthesis.</li>
+            </ul>
+        </section>
+        <section id="english">
+            <h2>English</h2>
+            <h3>Overview</h3>
+            <p>English enhances communication skills, focusing on grammar, comprehension, and literature analysis. It’s compulsory across all groups (FSc, ICS, ICom).</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Grammar and Composition</strong>: Tenses, sentence structure, and essay writing.</li>
+                <li><strong>Comprehension</strong>: Reading passages and answering questions.</li>
+                <li><strong>Literature</strong>: Short stories, poems, and prose from the textbook.</li>
+                <li><strong>Letter and Application Writing</strong>: Formal and informal formats.</li>
+                <li><strong>Vocabulary</strong>: Synonyms, antonyms, and idioms.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Practice writing essays and letters weekly.</li>
+                <li>Read English newspapers to improve vocabulary and comprehension.</li>
+                <li>Analyze poems and stories for themes and literary devices.</li>
+                <li>Use grammar apps to master tenses and sentence structure.</li>
+            </ul>
+        </section>
+        <section id="urdu">
+            <h2>Urdu</h2>
+            <h3>Overview</h3>
+            <p>Urdu, a compulsory subject, focuses on language proficiency, literature, and cultural understanding. It includes prose, poetry, and grammar.</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Prose</strong>: Essays and stories from the Urdu textbook.</li>
+                <li><strong>Poetry</strong>: Ghazals and Nazms by famous poets like Iqbal and Faiz.</li>
+                <li><strong>Grammar</strong>: Sentence structure, idioms, and proverbs.</li>
+                <li><strong>Letter and Application Writing</strong>: Formal and informal formats.</li>
+                <li><strong>Comprehension</strong>: Understanding and summarizing passages.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Read Urdu literature to understand cultural context.</li>
+                <li>Practice writing essays on social and cultural topics.</li>
+                <li>Memorize key poetic verses and their explanations.</li>
+                <li>Use Urdu dictionaries to enhance vocabulary.</li>
+            </ul>
+        </section>
+        <section id="islamic">
+            <h2>Islamic Studies / Pakistan Studies</h2>
+            <h3>Overview</h3>
+            <p>Islamic Studies (for Muslim students) or Pakistan Studies (for non-Muslims) is compulsory, focusing on religious knowledge or Pakistan’s history and geography.</p>
+            <h3>Key Topics (Islamic Studies)</h3>
+            <ul>
+                <li><strong>Basic Beliefs</strong>: Tauheed, Prophethood, and Day of Judgment.</li>
+                <li><strong>Seerat-un-Nabi</strong>: Life of Prophet Muhammad (PBUH).</li>
+                <li><strong>Quran and Hadith</strong>: Selected Surahs and Ahadith.</li>
+                <li><strong>Ethics and Morality</strong>: Islamic values and their application.</li>
+            </ul>
+            <h3>Key Topics (Pakistan Studies)</h3>
+            <ul>
+                <li><strong>Ideology of Pakistan</strong>: Two-Nation Theory, Quaid-e-Azam’s role.</li>
+                <li><strong>Historical Events</strong>: Pakistan Movement, 1947 partition.</li>
+                <li><strong>Geography</strong>: Physical features, climate, and resources.</li>
+                <li><strong>Constitution</strong>: Basic features of Pakistan’s constitution.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Memorize key Surahs, Ahadith, or historical dates.</li>
+                <li>Use timelines to understand Pakistan’s history.</li>
+                <li>Practice short-answer questions from past papers.</li>
+                <li>Relate ethical teachings or historical events to current issues.</li>
+            </ul>
+        </section>
+        <section id="computer">
+            <h2>Computer Science</h2>
+            <h3>Overview</h3>
+            <p>Computer Science introduces programming, hardware, and software concepts, essential for ICS students and those pursuing tech-related fields.</p>
+            <h3>Key Topics</h3>
+            <ul>
+                <li><strong>Basics of Computing</strong>: Hardware, software, and operating systems.</li>
+                <li><strong>Programming Fundamentals</strong>: C or C++ programming, variables, loops.</li>
+                <li><strong>Algorithms and Flowcharts</strong>: Problem-solving techniques.</li>
+                <li><strong>Data Types and Structures</strong>: Arrays, strings, and records.</li>
+                <li><strong>Number Systems</strong>: Binary, hexadecimal, and conversions.</li>
+                <li><strong>Boolean Algebra</strong>: Logic gates and truth tables.</li>
+            </ul>
+            <h3>Study Tips</h3>
+            <ul>
+                <li>Practice coding daily using simple programs.</li>
+                <li>Draw flowcharts to plan algorithms before coding.</li>
+                <li>Use online compilers like Replit for hands-on practice.</li>
+                <li>Understand binary conversions and logic gates through diagrams.</li>
+            </ul>
+        </section>
+    </div>
+    <script>
+        const cursor = document.createElement('div');
+        cursor.classList.add('cursor');
+        document.body.appendChild(cursor);
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+
+            const star = document.createElement('div');
+            star.classList.add('star-trail');
+            star.style.left = e.clientX - 4 + 'px';
+            star.style.top = e.clientY - 4 + 'px';
+            document.body.appendChild(star);
+
+            setTimeout(() => {
+                star.remove();
+            }, 500);
+        });
+
+        document.addEventListener('click', (e) => {
+            const star = document.createElement('div');
+            star.classList.add('star-trail');
+            star.style.left = e.clientX - 4 + 'px';
+            star.style.top = e.clientY - 4 + 'px';
+            star.style.background = '#ff4500';
+            document.body.appendChild(star);
+
+            setTimeout(() => {
+                star.remove();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
